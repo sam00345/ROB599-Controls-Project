@@ -4,7 +4,7 @@
 function[Al,Bl]=linearized_mats(xin,uin)
 syms x u y v psvar r delta_f F_x
 
-load('Linearized_expressions.mat','A_lin','B_lin')
+load('Linearized_expressions.mat','A_lin','B_lin');
 
-Al=double(eval(subs(A_lin,[x u y v psvar r delta_f F_x],[xin uin])))
-Bl=double(eval(subs(B_lin,[x u y v psvar r delta_f F_x],[xin uin])))
+Al=double(eval(subs(A_lin,[x u y v psvar r delta_f F_x],[xin uin])));
+Bl=double(eval(subs(B_lin,[x u y v psvar r delta_f F_x],[xin uin])));
