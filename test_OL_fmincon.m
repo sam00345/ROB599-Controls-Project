@@ -98,9 +98,13 @@ LB(1:n*(PredHorizon+1))=repmat([200 -50 -200 -50 0 -(pi)/2]',(PredHorizon+1),1);
 LB(n*(PredHorizon+1)+[1:2:m*PredHorizon])=-0.5*ones(m*PredHorizon/2,1);
 LB(n*(PredHorizon+1)+[2:2:m*PredHorizon])=-10000*ones(m*PredHorizon/2,1);
 
+%Typical values for decision variables 
+typdec=[repmat([300 10 300 10 pi/2 pi/20]',(PredHorizon+1),1);repmat([0.005 1000]',(PredHorizon),1)];
+%Constraint function
 nlcons=@(var)track_nlcons(var,TestTrack,Ndec,PredHorizon,n,m);%Nonlinear track constraints
+%Cost function
 fun=@(var)func_cost(var,Ndec,PredHorizon,n,m);%Nonlinear cost function
-options=optimoptions(@fmincon,'TypicalX',UB/4,'Algorithm','sqp','GradObj','on','ConstraintTolerance',1e-9,'MaxIter',10000,'MaxFunctionEvaluations',50000,'Display','Iter');%,[repmat([100;5;100;5;1;0.1],(PredHorizon+1),1) ; repmat([0.1;1000],PredHorizon,1)]
+options=optimoptions(@fmincon,'CheckGradients',false,'TypicalX',typdec,'GradConstr','on','Algorithm','sqp','GradObj','on','MaxIter',10000);%'MaxFunctionEvaluations',50000,'Display','Iter');%,[repmat([100;5;100;5;1;0.1],(PredHorizon+1),1) ; repmat([0.1;1000],PredHorizon,1)]'ConstraintTolerance',1e-9,
 exitmat=[];      
 lin_err=[];
 dec_all=dec0;
