@@ -1,4 +1,4 @@
-function [Y]=nldynamics(U,x0)
+function [Y]=nldynamics(U,x0,dt)
 %function [Y]=forwardIntegrateControlInput(U,x0)
 %
 %Given a set of inputs and an initial condition, returns the vehicles
@@ -21,12 +21,12 @@ function [Y]=nldynamics(U,x0)
 % Modified: 16 Nov 2017
 
 %if initial condition not given use default
-if nargin<2
-    x0=[287,5,-176,0,2,0];
-end
+% if nargin<2
+%     x0=[287,5,-176,0,2,0];
+% end
 
 %generate time vector
-T=0:0.01:(size(U,1)-1)*0.01;
+T=0:dt:(size(U,1)-1)*dt;
 
 %constants
 W=13720;

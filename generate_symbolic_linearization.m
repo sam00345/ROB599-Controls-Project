@@ -16,7 +16,7 @@ Shy=0;
 Svy=0;
 m=1400;
 
-syms phi_yf phi_yr a_f a_r u v r x y psvar F_x delta_f F_yr
+syms phi_yf phi_yr a_f a_r u v r x y psvar F_x delta_f F_yr f
 
 a_f= 180/pi*(delta_f-atan2(v+a*r,u));
 a_r= 180/pi*(-atan2((v-b*r),u));

@@ -80,7 +80,7 @@ bineq(m*PredHorizon+[2:2:m*PredHorizon],1)=10000*ones(m* (PredHorizon)/2,1);
 %Initial Parameters
 x = [287 5 -176 0 2 0]';
 u = [0 0]';
-dt=0.05;
+dt=0.01;
 T=[0:dt:5];
 x_all=x;
 u_all=[];
@@ -99,8 +99,8 @@ LB(n*(PredHorizon+1)+[1:2:m*PredHorizon])=-0.5*ones(m*PredHorizon/2,1);
 LB(n*(PredHorizon+1)+[2:2:m*PredHorizon])=-10000*ones(m*PredHorizon/2,1);
 
 nlcons=@(var)track_nlcons(var,TestTrack,Ndec,PredHorizon,n,m);%Nonlinear track constraints
-fun=@(var)func_cost(var,Ndec,PredHorizon,n,m);%Nonlinear cost function
-options=optimoptions(@fmincon,'TypicalX',UB/4,'Algorithm','sqp','GradObj','on','ConstraintTolerance',1e-9,'MaxIter',10000,'MaxFunctionEvaluations',50000,'Display','Iter');%,[repmat([100;5;100;5;1;0.1],(PredHorizon+1),1) ; repmat([0.1;1000],PredHorizon,1)]
+fun=@(var)func_cost2(var,Ndec,PredHorizon,n,m);%Nonlinear cost function
+options=optimoptions(@fmincon,'TypicalX',UB/4,'Algorithm','sqp','CheckGradients',false,'GradObj','on','ConstraintTolerance',1e-6,'MaxIter',10000,'MaxFunctionEvaluations',50000,'Display','Iter');%,[repmat([100;5;100;5;1;0.1],(PredHorizon+1),1) ; repmat([0.1;1000],PredHorizon,1)]
 exitmat=[];      
 lin_err=[];
 dec_all=dec0;
@@ -118,7 +118,7 @@ for i = 1:(length(T)-1)
         [Aeq, beq] = eq_cons(Ad, Bd, x, u, PredHorizon);
                 
         if i>1
-        dec0= [reshape(Y(:,2:end),n*(PredHorizon-1),1);Y(:,end);Y(:,end);reshape(u_horiz(:,2:end),m*(PredHorizon-1),1);zeros(m,1)];
+        dec0= dec;%[reshape(Y(:,2:end),n*(PredHorizon-1),1);Y(:,end);Y(:,end);reshape(u_horiz(:,2:end),m*(PredHorizon-1),1);zeros(m,1)];
         end
         
         %Run minimizer
@@ -128,15 +128,15 @@ for i = 1:(length(T)-1)
         u=dec(n*(PredHorizon+1)+[1:m]);
         u_horiz=reshape(dec(n*(PredHorizon+1)+[1:m*PredHorizon]),m,PredHorizon);
         u_all=[u_all u];
-        x_chk=dec(n+[1:n]);
-        %Forard integrate nonlinear dynamics with input 
-        [Y]=nldynamics(u_horiz',x,dt);
-        Y=Y';
-        x=Y(:,2);
+        x=dec(n+[1:n]);
+%         %Forard integrate nonlinear dynamics with input 
+%         [Y]=nldynamics(u_horiz',x,dt);
+%         Y=Y';
+%         x=Y(:,2);
         x_all=[x_all x];
         
         %% Look at error between nonlinear and linear dynamics used in optimization
-        lin_err=[lin_err norm(x-x_chk)/norm(x)];
+%         lin_err=[lin_err norm(x-x_chk)/norm(x)];
         
 end
         figure(1)

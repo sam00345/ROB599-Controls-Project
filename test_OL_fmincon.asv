@@ -81,19 +81,28 @@ bineq(m*PredHorizon+[2:2:m*PredHorizon],1)=10000*ones(m* (PredHorizon)/2,1);
 x = [287 5 -176 0 2 0]';
 u = [0 0]';
 dt=0.01;
-T=[0:dt:1];
+T=[0:dt:10];
 x_all=x;
 u_all=[];
+%Initial guess
 dec0=[repmat(x,PredHorizon+1,1);repmat(u,PredHorizon,1)];
+%Upper bounds
 UB=zeros(Ndec,1);
-UB(1:n*(PredHorizon+1))=100000*ones(n*(PredHorizon+1),1);
+UB(1:n*(PredHorizon+1))=repmat([2000 100 1000 100],(PredHorizon+1),1);
 UB(n*(PredHorizon+1)+[1:2:m*PredHorizon])=0.5*ones(m*PredHorizon/2,1);
 UB(n*(PredHorizon+1)+[2:2:m*PredHorizon])=6000*ones(m*PredHorizon/2,1);
 
+%Lower bounds
 LB=zeros(Ndec,1);
-LB(1:n*(PredHorizon+1))=100000*ones(n*(PredHorizon+1),1);
+LB(1:n*(PredHorizon+1))=repmat([200 -50 -200 -50  100],(PredHorizon+1),1);
 LB(n*(PredHorizon+1)+[1:2:m*PredHorizon])=-0.5*ones(m*PredHorizon/2,1);
 LB(n*(PredHorizon+1)+[2:2:m*PredHorizon])=-10000*ones(m*PredHorizon/2,1);
+
+nlcons=@(var)track_nlcons(var,TestTrack,Ndec,PredHorizon,n,m);%Nonlinear track constraints
+fun=@(var)func_cost(var,Ndec,PredHorizon,n,m);%Nonlinear cost function
+options=optimoptions(@fmincon,'GradObj','off','ConstraintTolerance',1e-9,'MaxIter',1000,'MaxFunctionEvaluations',5000,'Display','Iter');%'Algorithm','sqp''TypicalX',[repmat([100;5;100;5;1;0.1],(PredHorizon+1),1) ; repmat([0.1;1000],PredHorizon,1)]'CheckGradients',true,
+exitmat=[];      
+lin_err=[];
 
 for i = 1:(length(T)-1)
         i
@@ -107,20 +116,18 @@ for i = 1:(length(T)-1)
         %Generate Equality Constraint matrices
         [Aeq, beq] = eq_cons(Al, Bl, x, u, PredHorizon);
                 
-        nlcons=@(var)track_nlcons(var,TestTrack,Ndec,PredHorizon,n,m);
-        fun=@(var)func_cost(var,Ndec,PredHorizon,n,m);
-        options=optimoptions(@fmincon,'GradObj','on','MaxIter',1500,'Display','Iter');%'Algorithm','sqp'
         if i>1
         dec0= [reshape(Y(:,2:end),n*(PredHorizon-1),1);Y(:,end);Y(:,end);reshape(u_horiz(:,2:end),m*(PredHorizon-1),1);u_horiz(:,end)];
         end
         
         %Run minimizer
-        dec = fmincon(fun,dec0,[],[],Aeq,beq,LB,UB,nlcons,options);
-        
+        [dec,fcostval,exitflag,output] = fmincon(fun,dec0,[],[],Aeq,beq,LB,UB,nlcons,options);
+        exitmat=[exitmat exitflag];
         u=dec(n*(PredHorizon+1)+[1:m]);
         u_horiz=reshape(dec(n*(PredHorizon+1)+[1:m*PredHorizon]),m,PredHorizon);
         u_all=[u_all u];
-        
+        x_chk=dec(n+[1:n]);
+        keyboard 
         %Forard integrate nonlinear dynamics with input 
         [Y]=nldynamics(u_horiz',x);
         Y=Y';
@@ -129,7 +136,11 @@ for i = 1:(length(T)-1)
         figure(1)
         hold on
         plot(x(1),x(3),'or');
+        
+        %% Look at error between nonlinear and linear dynamics used in optimization
+        lin_err=[lin_err norm(x-x_chk)/norm(x)]
+        
 end
    
 
-save('Results.mat')
+% save('Results_10s.mat')
