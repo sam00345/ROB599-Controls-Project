@@ -27,13 +27,13 @@ for kk=1:(PredHorizon+1)
     xc=xc1+(1/(1+mc^2))*((xv-xc1)+mc*(yv-yc1));
     yc=yc1+(mc/(1+mc^2))*((xv-xc1)+mc*(yv-yc1));
     
-    %Intermediate variables (invbl and invbr should be between -1 and 1  for car to lie inside
+    %Intermediate variables (invbl and invbr should be both < 1  for car to lie inside
     %track). Represents ratio of perpendicular distances from vehicle and track left and right to centerline)  
     invbr=((yv-yc)-mr*(xv-xc))/(mr*xc+cr-yc);
     invbl=((yv-yc)-ml*(xv-xc))/(ml*xc+cl-yc);
     
-    c(2*kk-1,1)=sign(invbr)*invbr-1;
-    c(2*kk,1)=sign(invbl)*invbl-1;
+    c(2*kk-1,1)=invbr-1;
+    c(2*kk,1)=invbl-1;
     
     dxc_by_xv=(1/(1+mc^2));
     dxc_by_yv=(mc/(1+mc^2));
@@ -50,10 +50,10 @@ for kk=1:(PredHorizon+1)
     dinvbl_by_xc=ml/(ml*xc+cl-yc)-((ml^2*xc)/(ml*xc+cl-yc)^2);
     dinvbl_by_yc=-1/(ml*xc+cl-yc)-((yc)/(ml*xc+cl-yc)^2);
     
-    J(n*(kk-1)+1,2*kk-1)=sign(invbr)*(dinvbr_by_xv+dinvbr_by_xc*dxc_by_xv+dinvbr_by_yc*dyc_by_xv);%Derivarive of c(2*kk-1,1) wrt xv
-    J(n*(kk-1)+3,2*kk-1)=sign(invbr)*(dinvbr_by_yv+dinvbr_by_xc*dxc_by_yv+dinvbr_by_yc*dyc_by_yv);%Derivarive of c(2*kk-1,1) wrt yv
-    J(n*(kk-1)+1,2*kk)=sign(invbl)*(dinvbl_by_xv+dinvbl_by_xc*dxc_by_xv+dinvbl_by_yc*dyc_by_xv);%Derivarive of c(2*kk,1) wrt xv
-    J(n*(kk-1)+3,2*kk)=sign(invbl)*(dinvbl_by_yv+dinvbl_by_xc*dxc_by_yv+dinvbl_by_yc*dyc_by_yv);%Derivarive of c(2*kk,1) wrt yv
+    J(n*(kk-1)+1,2*kk-1)=(dinvbr_by_xv+dinvbr_by_xc*dxc_by_xv+dinvbr_by_yc*dyc_by_xv);%Derivarive of c(2*kk-1,1) wrt xv
+    J(n*(kk-1)+3,2*kk-1)=(dinvbr_by_yv+dinvbr_by_xc*dxc_by_yv+dinvbr_by_yc*dyc_by_yv);%Derivarive of c(2*kk-1,1) wrt yv
+    J(n*(kk-1)+1,2*kk)=(dinvbl_by_xv+dinvbl_by_xc*dxc_by_xv+dinvbl_by_yc*dyc_by_xv);%Derivarive of c(2*kk,1) wrt xv
+    J(n*(kk-1)+3,2*kk)=(dinvbl_by_yv+dinvbl_by_xc*dxc_by_yv+dinvbl_by_yc*dyc_by_yv);%Derivarive of c(2*kk,1) wrt yv
 end
 
 ceq = [];   % Compute nonlinear equalities at x.
