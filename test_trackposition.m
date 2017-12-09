@@ -49,29 +49,23 @@ for kk=1:length(xv_mat)
     br=(mr*xc+cr-yc)/((yv-yc)-mr*(xv-xc));
     bl=(ml*xc+cl-yc)/((yv-yc)-ml*(xv-xc));
     
-    %Intermediate variables (invbl and invbr should be between -1 and 1  for car to lie inside
+    %Intermediate variables (invbl and invbr should be less than 1  for car to lie inside
     %track)
     invbr=((yv-yc)-mr*(xv-xc))/(mr*xc+cr-yc);
     invbl=((yv-yc)-ml*(xv-xc))/(ml*xc+cl-yc);
     
-    sign(invbr)*invbr-1
-    sign(invbl)*invbl-1
+    invbr-1
+    invbl-1
     %Stop if the constraint is wrong (violated when it shouldn't be)
     if flag==1
-        if(sign(invbr)*invbr-1)>0
-            keyboard
-        end
-        if(sign(invbl)*invbl-1)>0
+        if ~((invbr-1)<0 && (invbl-1)<0)%If constraints not satisfied
             keyboard
         end
     elseif flag==0
-        if(sign(invbr)*invbr-1)<0
+        if ((invbr-1)<0 && (invbl-1) <0) %If constraints are satisfied
             keyboard
         end
-        if(sign(invbl)*invbl-1)<0
-            keyboard
-        end
-    end
+     end
     %Point on left track corresponding to current vehicle position
     xli=xc+bl*(xv-xc);
     yli=yc+bl*(yv-yc);
